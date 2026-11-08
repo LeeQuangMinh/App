@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lịch Xe</title>
+  <title>Lịch Xe GoKey</title>
   <style>
     :root {
-      --col-vehicle-w: 118px;
+      --col-vehicle-w: 125px;
       --col-day-w: 96px;
       --border-color: #e5e7eb;
       --bg-header: #f8fafc;
@@ -24,7 +24,7 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden; /* Khóa cuộn trang ngoài, chống giật trên iPhone */
+      overflow: hidden;
     }
 
     /* Thanh tiêu đề & Điều hướng */
@@ -36,7 +36,8 @@
       border-bottom: 1px solid var(--border-color);
       background: #ffffff;
       z-index: 30;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
     .title-area {
       display: flex;
@@ -66,15 +67,15 @@
 
     .nav-btns {
       display: flex;
-      gap: 5px;
+      gap: 4px;
       align-items: center;
     }
     .btn {
-      padding: 6px 9px;
+      padding: 5px 8px;
       border: 1px solid #d1d5db;
       background: #ffffff;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       color: #374151;
       cursor: pointer;
@@ -84,18 +85,18 @@
       background: #f3f4f6;
     }
     .btn-icon {
-      padding: 6px 8px;
-      font-size: 13px;
+      padding: 5px 7px;
+      font-size: 12px;
     }
 
-    /* Thanh chú thích trạng thái & Bộ lọc nhanh */
+    /* Thanh chú thích trạng thái */
     .legend-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 7px 12px;
-      font-size: 12px;
+      padding: 6px 12px;
+      font-size: 11.5px;
       background: #fafafa;
       border-bottom: 1px solid var(--border-color);
       overflow-x: auto;
@@ -103,24 +104,23 @@
     }
     .legend-group {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
     }
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       color: #4b5563;
     }
     .legend-box {
-      width: 13px;
-      height: 13px;
-      border-radius: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
       border: 1px solid transparent;
       flex-shrink: 0;
     }
 
-    /* Màu sắc trạng thái giống Hình 2 */
     .st-pending { background: #e8f4fd; border-color: #60a5fa; color: #1e3a8a; }
     .st-active  { background: #fef9c3; border-color: #facc15; color: #713f12; }
     .st-done    { background: #fce7f3; border-color: #f472b6; color: #831843; }
@@ -139,7 +139,7 @@
       min-width: max-content;
     }
 
-    /* Dòng Header Thứ / Ngày (Cố định phía trên) */
+    /* Dòng Header Thứ / Ngày */
     .header-row {
       display: flex;
       position: sticky;
@@ -166,10 +166,10 @@
     .day-cell-header {
       width: var(--col-day-w);
       min-width: var(--col-day-w);
-      padding: 7px 4px;
+      padding: 6px 4px;
       text-align: center;
       border-right: 1px solid var(--border-color);
-      font-size: 13px;
+      font-size: 12.5px;
     }
     .day-cell-header.today {
       background: #eff6ff;
@@ -177,7 +177,7 @@
     }
     .day-name {
       font-weight: 700;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
     .day-date {
       font-size: 11px;
@@ -192,7 +192,7 @@
     .vehicle-row {
       display: flex;
       border-bottom: 1px solid var(--border-color);
-      min-height: 72px;
+      min-height: 70px;
       position: relative;
       background: #ffffff;
     }
@@ -204,15 +204,15 @@
       z-index: 10;
       background: #fafafa;
       border-right: 1px solid #cbd5e1;
-      padding: 8px 8px;
+      padding: 6px 8px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
     .v-name {
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 700;
-      line-height: 1.3;
+      line-height: 1.25;
       margin-bottom: 3px;
       word-break: break-word;
     }
@@ -238,7 +238,7 @@
       background: rgba(239, 246, 255, 0.4);
     }
 
-    /* Thanh hiển thị Lịch đặt xe (Booking Pill) */
+    /* Thanh lịch đặt xe */
     .booking-pill {
       position: absolute;
       height: 28px;
@@ -279,7 +279,7 @@
       flex-shrink: 0;
     }
 
-    /* Popup Chi tiết nhanh (Bottom Sheet) khi bấm vào thanh lịch */
+    /* Modal chi tiết khi bấm vào thanh lịch */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -344,33 +344,27 @@
       border: none;
       cursor: pointer;
     }
-    .btn-call-lg {
-      background: #10b981;
-      color: #ffffff;
-    }
-    .btn-appsheet {
-      background: #2563eb;
-      color: #ffffff;
-    }
+    .btn-call-lg { background: #10b981; color: #ffffff; }
+    .btn-appsheet { background: #2563eb; color: #ffffff; }
   </style>
 </head>
 <body>
 
-  <!-- Thanh điều hướng trên cùng -->
+  <!-- Thanh tiêu đề có bộ lọc ngày và cuộn 60 ngày -->
   <div class="top-bar">
     <div class="title-area">
       <h1>Lịch xe</h1>
-      <span class="sync-dot" id="syncDot" title="Trạng thái dữ liệu"></span>
+      <span class="sync-dot" id="syncDot" title="Trạng thái đồng bộ"></span>
     </div>
     <div class="nav-btns">
-      <button class="btn" onclick="changeDays(-7)">◀ Tuần</button>
+      <button class="btn" onclick="changeDays(-15)">◀ Trước</button>
+      <input type="date" id="datePicker" class="btn" onchange="jumpToSelectedDate(this.value)" style="padding: 3px 4px;">
       <button class="btn" onclick="goToday()">Hôm nay</button>
-      <button class="btn" onclick="changeDays(7)">Tuần ▶</button>
-      <button class="btn btn-icon" onclick="loadData(true)" title="Tải lại dữ liệu mới nhất">↻</button>
+      <button class="btn" onclick="changeDays(15)">Sau ▶</button>
+      <button class="btn btn-icon" onclick="loadData()" title="Tải lại">↻</button>
     </div>
   </div>
 
-  <!-- Chú thích màu sắc trạng thái -->
   <div class="legend-bar">
     <div class="legend-group">
       <div class="legend-item"><span class="legend-box st-pending"></span> Chờ / Đã xác nhận</div>
@@ -379,12 +373,10 @@
     </div>
   </div>
 
-  <!-- Khung cuộn Lịch -->
   <div class="calendar-viewport" id="viewport">
     <div class="calendar-grid" id="calendarGrid"></div>
   </div>
 
-  <!-- Hộp thoại xem nhanh khi bấm vào 1 thanh lịch -->
   <div class="modal-backdrop" id="detailModal" onclick="closeModal()">
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -400,101 +392,99 @@
   </div>
 
   <script>
-
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby164EC0QAA9iJFdTeWT4knctdDCGNy95eSgLUYMkFc2neugfctgN8t3BJ7JB1IstCN/exec";
-
+    // =========================================================================
+    // DÁN LINK WEB APP GOOGLE APPS SCRIPT CỦA BẠN VÀO ĐÂY:
+    // =========================================================================
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcIMNU1YAyUs_pZOo_QBMu81iuWrhL7YDJ5L1VdtEeP8YyKyH-_NTJ9l8w0fUTE_va/exec";
 
     const urlParams = new URLSearchParams(window.location.search);
     const SHEET_ID = urlParams.get("sheetId") || "";
     const CONNECT_TOKEN = urlParams.get("token") || "";
     const APPSHEET_APP_ID = urlParams.get("appId") || "";
 
-    const DAY_WIDTH = 96; 
-    const NUM_DAYS = 14;  
-    let startDate = getMonday(new Date());
+    const DAY_WIDTH = 96;
+    const NUM_DAYS = 60;       // Dải lịch hiển thị 60 ngày liên tục để vuốt thoải mái
+    const DAYS_BEFORE = 15;    // Lùi về trước 15 ngày so với ngày trung tâm
+    let centerDate = new Date();
+    centerDate.setHours(0, 0, 0, 0);
+
+    function getStartDate(center) {
+      const d = new Date(center);
+      d.setDate(d.getDate() - DAYS_BEFORE);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    let startDate = getStartDate(centerDate);
     let appData = { vehicles: [], bookings: [] };
 
     const DEMO_DATA = {
       vehicles: [
-        { id: "XE0001", hangXe: "Vinfast", mauXe: "Xanh Dương", bienSo: "68A-568.40", label: "Vinfast 68A-568.40" },
-        { id: "XE0002", hangXe: "Vinfast", mauXe: "Vàng", bienSo: "68A-620.30", label: "Vinfast 68A-620.30" },
-        { id: "XE0003", hangXe: "Vinfast", mauXe: "Cam", bienSo: "12345", label: "Vinfast 12345" }
+        { id: "XE0001", hangXe: "Vinfast", tenXe: "", mauXe: "Xanh Dương", bienSo: "68A-568.40", label: "Vinfast Xanh Dương" },
+        { id: "XE0002", hangXe: "Vinfast", tenXe: "Vf5", mauXe: "Vàng", bienSo: "68A-620.39", label: "Vf5 Vàng" }
       ],
       bookings: [
         {
-          id: "CD_2610201210",
+          id: "CD_DEMO",
           vehicleId: "XE0001",
-          maKH: "KH0001",
           tenKH: "A Sự",
           sdt: "0915245644",
           start: "2026-10-01T09:00:00",
           end: "2026-10-20T23:00:00",
-          ghiChu: "Khách quen thuê dài ngày",
+          ghiChu: "Thuê xe dài ngày",
           trangThai: "ĐANG THUÊ"
         }
       ]
     };
 
-    function getMonday(d) {
-      const date = new Date(d);
-      const day = date.getDay();
-      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-      date.setDate(diff);
-      date.setHours(0, 0, 0, 0);
-      return date;
+    function scrollToCenterDate(targetDate) {
+      const viewport = document.getElementById("viewport");
+      const diffDays = Math.round((targetDate.getTime() - startDate.getTime()) / 86400000);
+      if (diffDays >= 0 && diffDays < NUM_DAYS) {
+        const scrollX = Math.max(0, (diffDays - 1) * DAY_WIDTH);
+        viewport.scrollTo({ left: scrollX, behavior: "smooth" });
+      }
+      const yyyy = targetDate.getFullYear();
+      const mm = String(targetDate.getMonth() + 1).padStart(2, "0");
+      const dd = String(targetDate.getDate()).padStart(2, "0");
+      const picker = document.getElementById("datePicker");
+      if (picker) picker.value = `${yyyy}-${mm}-${dd}`;
     }
 
-    async function loadData(forceJumpToData = false) {
+    async function loadData() {
       const syncDot = document.getElementById("syncDot");
       syncDot.classList.add("syncing");
       const cacheKey = "LICH_XE_CACHE_" + SHEET_ID;
 
       try {
-        if (!APPS_SCRIPT_URL.startsWith("http")) {
-          // Chế độ chạy thử trên máy tính với dữ liệu mẫu của bạn
+        if (!APPS_SCRIPT_URL.startsWith("http") || !SHEET_ID) {
           appData = DEMO_DATA;
-          startDate = new Date(2026, 9, 1);
           renderCalendar();
+          scrollToCenterDate(centerDate);
           return;
         }
 
-        // 1. Hiển thị ngay lập tức từ bộ nhớ đệm (Cache) trong 0.1 giây
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           appData = JSON.parse(cached);
           renderCalendar();
         }
 
-        // 2. Tải ngầm dữ liệu mới nhất từ Google Sheets về
         const apiUrl = `${APPS_SCRIPT_URL}?sheetId=${encodeURIComponent(SHEET_ID)}&token=${encodeURIComponent(CONNECT_TOKEN)}`;
         const res = await fetch(apiUrl);
         const json = await res.json();
 
         if (json.error) {
-          alert("Thông báo từ Server: " + json.error);
+          alert("Lỗi: " + json.error);
           return;
         }
 
         appData = json;
         localStorage.setItem(cacheKey, JSON.stringify(appData));
-
-        // Nếu tuần hiện tại không có đơn nào nhưng trong bảng có đơn ở tháng khác, tự nhảy tới đơn gần nhất khi mới mở
-        if (!cached && appData.bookings && appData.bookings.length > 0) {
-          const nowMs = Date.now();
-          const hasCurrent = appData.bookings.some(b => {
-            const s = new Date(b.start).getTime();
-            const e = new Date(b.end).getTime();
-            return e >= startDate.getTime() && s <= startDate.getTime() + NUM_DAYS * 86400000;
-          });
-          if (!hasCurrent) {
-            startDate = getMonday(new Date(appData.bookings[0].start));
-          }
-        }
-
         renderCalendar();
+        scrollToCenterDate(centerDate);
       } catch (err) {
         console.error(err);
-        alert("Không thể kết nối lấy dữ liệu mới. Đang hiển thị bản lưu gần nhất.");
       } finally {
         syncDot.classList.remove("syncing");
       }
@@ -516,7 +506,7 @@
       const todayStr = new Date().toDateString();
       const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
-      // 1. Vẽ dòng Header Ngày
+      // Header ngày
       const headerRow = document.createElement("div");
       headerRow.className = "header-row";
       headerRow.innerHTML = `<div class="corner-cell">Xe</div>`;
@@ -533,7 +523,7 @@
       });
       grid.appendChild(headerRow);
 
-      // 2. Vẽ từng dòng Xe
+      // Các dòng xe
       (appData.vehicles || []).forEach((v, idx) => {
         const row = document.createElement("div");
         row.className = "vehicle-row";
@@ -541,9 +531,13 @@
         const colorClass = idx % 2 === 0 ? "text-orange" : "text-dark";
         const info = document.createElement("div");
         info.className = "vehicle-info";
+
+        // Dòng trên: Nếu có Tên Xe thì dùng Tên Xe + Màu Xe, ngược lại Hãng Xe + Màu Xe
+        const topDisplay = v.tenXe ? `${v.tenXe} ${v.mauXe}` : `${v.hangXe} ${v.mauXe}`;
+
         info.innerHTML = `
-          <div class="v-name ${colorClass}">${v.hangXe || ""} ${v.mauXe || ""}</div>
-          <div class="v-plate ${colorClass}">${v.bienSo || v.id}</div>
+          <div class="v-name ${colorClass}">${topDisplay}</div>
+          <div class="v-plate ${colorClass}">${v.bienSo}</div>
         `;
         row.appendChild(info);
 
@@ -555,14 +549,12 @@
           track.appendChild(cell);
         });
 
-        // Lọc các đơn thuê của xe này nằm trong khoảng ngày đang hiển thị
         const vBookings = (appData.bookings || [])
           .filter(b => b.vehicleId === v.id)
           .map(b => ({ ...b, sMs: new Date(b.start).getTime(), eMs: new Date(b.end).getTime() }))
           .filter(b => !isNaN(b.sMs) && !isNaN(b.eMs) && b.eMs > timelineStartMs && b.sMs < timelineEndMs)
           .sort((a, b) => a.sMs - b.sMs);
 
-        // Xử lý xếp tầng (overlap) khi 1 xe có nhiều đơn gối đầu trong cùng ngày
         const lanes = [];
         vBookings.forEach(b => {
           let laneIndex = 0;
@@ -574,10 +566,9 @@
         });
 
         if (lanes.length > 1) {
-          row.style.minHeight = `${44 + lanes.length * 26}px`;
+          row.style.minHeight = `${42 + lanes.length * 24}px`;
         }
 
-        // Vẽ từng thanh lịch đặt xe
         vBookings.forEach(b => {
           const clampStart = Math.max(b.sMs, timelineStartMs);
           const clampEnd = Math.min(b.eMs, timelineEndMs);
@@ -594,12 +585,12 @@
           pill.className = `booking-pill ${stClass}`;
           pill.style.left = `${leftPx}px`;
           pill.style.width = `${widthPx}px`;
-          pill.style.top = `${12 + b.lane * 24}px`;
+          pill.style.top = `${10 + b.lane * 22}px`;
 
           const labelTime = `${b.tenKH ? b.tenKH + " • " : ""}${formatShortDT(b.start)} → ${formatShortDT(b.end)}`;
           pill.innerHTML = `
             <span class="pill-text">${labelTime}</span>
-            ${b.sdt ? `<a href="tel:${b.sdt}" class="call-btn" onclick="event.stopPropagation()" title="Gọi ${b.sdt}">📞</a>` : ""}
+            ${b.sdt ? `<a href="tel:${b.sdt}" class="call-btn" onclick="event.stopPropagation()">📞</a>` : ""}
           `;
 
           pill.onclick = () => showBookingDetail(v, b);
@@ -621,18 +612,32 @@
     }
 
     function changeDays(delta) {
-      startDate.setDate(startDate.getDate() + delta);
+      centerDate.setDate(centerDate.getDate() + delta);
+      startDate = getStartDate(centerDate);
       renderCalendar();
+      scrollToCenterDate(centerDate);
     }
 
     function goToday() {
-      startDate = getMonday(new Date());
+      centerDate = new Date();
+      centerDate.setHours(0, 0, 0, 0);
+      startDate = getStartDate(centerDate);
       renderCalendar();
+      scrollToCenterDate(centerDate);
     }
 
-    // Hiển thị hộp thoại thông tin đầy đủ khi chạm vào 1 thanh lịch
+    function jumpToSelectedDate(val) {
+      if (!val) return;
+      const parts = val.split("-");
+      centerDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      startDate = getStartDate(centerDate);
+      renderCalendar();
+      scrollToCenterDate(centerDate);
+    }
+
     function showBookingDetail(vehicle, booking) {
-      document.getElementById("mVehicle").textContent = `${vehicle.hangXe} ${vehicle.mauXe} (${vehicle.bienSo})`;
+      const topDisplay = vehicle.tenXe ? `${vehicle.tenXe} ${vehicle.mauXe}` : `${vehicle.hangXe} ${vehicle.mauXe}`;
+      document.getElementById("mVehicle").textContent = `${topDisplay} (${vehicle.bienSo})`;
       document.getElementById("mBody").innerHTML = `
         <p><strong>Khách thuê:</strong> ${booking.tenKH || booking.maKH} ${booking.sdt ? `(${booking.sdt})` : ""}</p>
         <p><strong>Nhận xe:</strong> ${formatShortDT(booking.start)}</p>
@@ -649,9 +654,7 @@
         callBtn.style.display = "none";
       }
 
-      const appBtn = document.getElementById("mAppSheetBtn");
-      appBtn.onclick = () => openInAppSheet(booking.id);
-
+      document.getElementById("mAppSheetBtn").onclick = () => openInAppSheet(booking.id);
       document.getElementById("detailModal").style.display = "flex";
     }
 
@@ -661,7 +664,7 @@
 
     function openInAppSheet(maCD) {
       if (!APPSHEET_APP_ID) {
-        alert(`Mã đơn: ${maCD}\n(Khi mở từ nút bấm trong AppSheet, tham số appId sẽ tự động được truyền vào để nhảy thẳng về đơn này)`);
+        alert(`Mã đơn: ${maCD}`);
         return;
       }
       const deepLink = `https://www.appsheet.com/start/${encodeURIComponent(APPSHEET_APP_ID)}#control=DICH%20VU_Detail&row=${encodeURIComponent(maCD)}`;

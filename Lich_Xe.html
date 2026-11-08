@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lịch Xe</title>
+  <style>
+    :root {
+      --col-vehicle-w: 118px;
+      --col-day-w: 96px;
+      --border-color: #e5e7eb;
+      --bg-header: #f8fafc;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #ffffff;
+      color: #1f2937;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* Khóa cuộn trang ngoài, chống giật trên iPhone */
+    }
+
+    /* Thanh tiêu đề & Điều hướng */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      background: #ffffff;
+      z-index: 30;
+      gap: 8px;
+    }
+    .title-area {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .top-bar h1 {
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+    }
+    .sync-dot.syncing {
+      background: #f59e0b;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .nav-btns {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .btn {
+      padding: 6px 9px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn:active {
+      background: #f3f4f6;
+    }
+    .btn-icon {
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+
+    /* Thanh chú thích trạng thái & Bộ lọc nhanh */
+    .legend-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 12px;
+      font-size: 12px;
+      background: #fafafa;
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .legend-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #4b5563;
+    }
+    .legend-box {
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      flex-shrink: 0;
+    }
+
+    /* Màu sắc trạng thái giống Hình 2 */
+    .st-pending { background: #e8f4fd; border-color: #60a5fa; color: #1e3a8a; }
+    .st-active  { background: #fef9c3; border-color: #facc15; color: #713f12; }
+    .st-done    { background: #fce7f3; border-color: #f472b6; color: #831843; }
+
+    /* Vùng cuộn Lịch 2 chiều */
+    .calendar-viewport {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+    }
+    .calendar-grid {
+      display: flex;
+      flex-direction: column;
+      min-width: max-content;
+    }
+
+    /* Dòng Header Thứ / Ngày (Cố định phía trên) */
+    .header-row {
+      display: flex;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .corner-cell {
+      width: var(--col-vehicle-w);
+      min-width: var(--col-vehicle-w);
+      position: sticky;
+      left: 0;
+      z-index: 25;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #1e293b;
+      border-right: 1px solid #cbd5e1;
+    }
+    .day-cell-header {
+      width: var(--col-day-w);
+      min-width: var(--col-day-w);
+      padding: 7px 4px;
+      text-align: center;
+      border-right: 1px solid var(--border-color);
+      font-size: 13px;
+    }
+    .day-cell-header.today {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    .day-name {
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .day-date {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .day-cell-header.today .day-date {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    /* Từng dòng Xe */
+    .vehicle-row {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      min-height: 72px;
+      position: relative;
+      background: #ffffff;
+    }
+    .vehicle-info {
+      width: var(--col-vehicle-w);
+      min-width: var(--col-vehicle-w);
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      background: #fafafa;
+      border-right: 1px solid #cbd5e1;
+      padding: 8px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .v-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 3px;
+      word-break: break-word;
+    }
+    .v-plate {
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .text-orange { color: #ea580c; }
+    .text-dark   { color: #111827; }
+
+    /* Lưới ô ngày bên phải */
+    .timeline-track {
+      display: flex;
+      position: relative;
+    }
+    .day-bg-cell {
+      width: var(--col-day-w);
+      min-width: var(--col-day-w);
+      border-right: 1px solid #f1f5f9;
+      height: 100%;
+    }
+    .day-bg-cell.today-col {
+      background: rgba(239, 246, 255, 0.4);
+    }
+
+    /* Thanh hiển thị Lịch đặt xe (Booking Pill) */
+    .booking-pill {
+      position: absolute;
+      height: 28px;
+      border-radius: 6px;
+      padding: 0 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      cursor: pointer;
+      z-index: 5;
+      transition: transform 0.1s;
+    }
+    .booking-pill:active {
+      transform: scale(0.98);
+      z-index: 9;
+    }
+    .pill-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 4px;
+    }
+    .call-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Popup Chi tiết nhanh (Bottom Sheet) khi bấm vào thanh lịch */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-sheet {
+      background: #ffffff;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 16px 16px 0 0;
+      padding: 16px;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
+      animation: slideUp 0.2s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .close-btn {
+      border: none;
+      background: #f3f4f6;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .modal-body p {
+      font-size: 13.5px;
+      margin-bottom: 8px;
+      color: #374151;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-call-lg {
+      background: #10b981;
+      color: #ffffff;
+    }
+    .btn-appsheet {
+      background: #2563eb;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Thanh điều hướng trên cùng -->
+  <div class="top-bar">
+    <div class="title-area">
+      <h1>Lịch xe</h1>
+      <span class="sync-dot" id="syncDot" title="Trạng thái dữ liệu"></span>
+    </div>
+    <div class="nav-btns">
+      <button class="btn" onclick="changeDays(-7)">◀ Tuần</button>
+      <button class="btn" onclick="goToday()">Hôm nay</button>
+      <button class="btn" onclick="changeDays(7)">Tuần ▶</button>
+      <button class="btn btn-icon" onclick="loadData(true)" title="Tải lại dữ liệu mới nhất">↻</button>
+    </div>
+  </div>
+
+  <!-- Chú thích màu sắc trạng thái -->
+  <div class="legend-bar">
+    <div class="legend-group">
+      <div class="legend-item"><span class="legend-box st-pending"></span> Chờ / Đã xác nhận</div>
+      <div class="legend-item"><span class="legend-box st-active"></span> Đang thuê</div>
+      <div class="legend-item"><span class="legend-box st-done"></span> Đã trả xe</div>
+    </div>
+  </div>
+
+  <!-- Khung cuộn Lịch -->
+  <div class="calendar-viewport" id="viewport">
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+
+  <!-- Hộp thoại xem nhanh khi bấm vào 1 thanh lịch -->
+  <div class="modal-backdrop" id="detailModal" onclick="closeModal()">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title" id="mVehicle">Chi tiết lịch thuê</div>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="mBody"></div>
+      <div class="modal-actions">
+        <a id="mCallBtn" href="#" class="action-btn btn-call-lg">📞 Gọi khách</a>
+        <button id="mAppSheetBtn" class="action-btn btn-appsheet">Mở đơn trên App</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby164EC0QAA9iJFdTeWT4knctdDCGNy95eSgLUYMkFc2neugfctgN8t3BJ7JB1IstCN/exec";
+
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const SHEET_ID = urlParams.get("sheetId") || "";
+    const CONNECT_TOKEN = urlParams.get("token") || "";
+    const APPSHEET_APP_ID = urlParams.get("appId") || "";
+
+    const DAY_WIDTH = 96; 
+    const NUM_DAYS = 14;  
+    let startDate = getMonday(new Date());
+    let appData = { vehicles: [], bookings: [] };
+
+    const DEMO_DATA = {
+      vehicles: [
+        { id: "XE0001", hangXe: "Vinfast", mauXe: "Xanh Dương", bienSo: "68A-568.40", label: "Vinfast 68A-568.40" },
+        { id: "XE0002", hangXe: "Vinfast", mauXe: "Vàng", bienSo: "68A-620.30", label: "Vinfast 68A-620.30" },
+        { id: "XE0003", hangXe: "Vinfast", mauXe: "Cam", bienSo: "12345", label: "Vinfast 12345" }
+      ],
+      bookings: [
+        {
+          id: "CD_2610201210",
+          vehicleId: "XE0001",
+          maKH: "KH0001",
+          tenKH: "A Sự",
+          sdt: "0915245644",
+          start: "2026-10-01T09:00:00",
+          end: "2026-10-20T23:00:00",
+          ghiChu: "Khách quen thuê dài ngày",
+          trangThai: "ĐANG THUÊ"
+        }
+      ]
+    };
+
+    function getMonday(d) {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      date.setDate(diff);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    async function loadData(forceJumpToData = false) {
+      const syncDot = document.getElementById("syncDot");
+      syncDot.classList.add("syncing");
+      const cacheKey = "LICH_XE_CACHE_" + SHEET_ID;
+
+      try {
+        if (!APPS_SCRIPT_URL.startsWith("http")) {
+          // Chế độ chạy thử trên máy tính với dữ liệu mẫu của bạn
+          appData = DEMO_DATA;
+          startDate = new Date(2026, 9, 1);
+          renderCalendar();
+          return;
+        }
+
+        // 1. Hiển thị ngay lập tức từ bộ nhớ đệm (Cache) trong 0.1 giây
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          appData = JSON.parse(cached);
+          renderCalendar();
+        }
+
+        // 2. Tải ngầm dữ liệu mới nhất từ Google Sheets về
+        const apiUrl = `${APPS_SCRIPT_URL}?sheetId=${encodeURIComponent(SHEET_ID)}&token=${encodeURIComponent(CONNECT_TOKEN)}`;
+        const res = await fetch(apiUrl);
+        const json = await res.json();
+
+        if (json.error) {
+          alert("Thông báo từ Server: " + json.error);
+          return;
+        }
+
+        appData = json;
+        localStorage.setItem(cacheKey, JSON.stringify(appData));
+
+        // Nếu tuần hiện tại không có đơn nào nhưng trong bảng có đơn ở tháng khác, tự nhảy tới đơn gần nhất khi mới mở
+        if (!cached && appData.bookings && appData.bookings.length > 0) {
+          const nowMs = Date.now();
+          const hasCurrent = appData.bookings.some(b => {
+            const s = new Date(b.start).getTime();
+            const e = new Date(b.end).getTime();
+            return e >= startDate.getTime() && s <= startDate.getTime() + NUM_DAYS * 86400000;
+          });
+          if (!hasCurrent) {
+            startDate = getMonday(new Date(appData.bookings[0].start));
+          }
+        }
+
+        renderCalendar();
+      } catch (err) {
+        console.error(err);
+        alert("Không thể kết nối lấy dữ liệu mới. Đang hiển thị bản lưu gần nhất.");
+      } finally {
+        syncDot.classList.remove("syncing");
+      }
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById("calendarGrid");
+      grid.innerHTML = "";
+
+      const days = [];
+      for (let i = 0; i < NUM_DAYS; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        days.push(d);
+      }
+
+      const timelineStartMs = days[0].getTime();
+      const timelineEndMs = days[days.length - 1].getTime() + 86400000;
+      const todayStr = new Date().toDateString();
+      const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+      // 1. Vẽ dòng Header Ngày
+      const headerRow = document.createElement("div");
+      headerRow.className = "header-row";
+      headerRow.innerHTML = `<div class="corner-cell">Xe</div>`;
+
+      days.forEach(d => {
+        const isToday = d.toDateString() === todayStr ? "today" : "";
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        headerRow.innerHTML += `
+          <div class="day-cell-header ${isToday}">
+            <div class="day-name">${dayNames[d.getDay()]}</div>
+            <div class="day-date">${dd}/${mm}</div>
+          </div>`;
+      });
+      grid.appendChild(headerRow);
+
+      // 2. Vẽ từng dòng Xe
+      (appData.vehicles || []).forEach((v, idx) => {
+        const row = document.createElement("div");
+        row.className = "vehicle-row";
+
+        const colorClass = idx % 2 === 0 ? "text-orange" : "text-dark";
+        const info = document.createElement("div");
+        info.className = "vehicle-info";
+        info.innerHTML = `
+          <div class="v-name ${colorClass}">${v.hangXe || ""} ${v.mauXe || ""}</div>
+          <div class="v-plate ${colorClass}">${v.bienSo || v.id}</div>
+        `;
+        row.appendChild(info);
+
+        const track = document.createElement("div");
+        track.className = "timeline-track";
+        days.forEach(d => {
+          const cell = document.createElement("div");
+          cell.className = "day-bg-cell" + (d.toDateString() === todayStr ? " today-col" : "");
+          track.appendChild(cell);
+        });
+
+        // Lọc các đơn thuê của xe này nằm trong khoảng ngày đang hiển thị
+        const vBookings = (appData.bookings || [])
+          .filter(b => b.vehicleId === v.id)
+          .map(b => ({ ...b, sMs: new Date(b.start).getTime(), eMs: new Date(b.end).getTime() }))
+          .filter(b => !isNaN(b.sMs) && !isNaN(b.eMs) && b.eMs > timelineStartMs && b.sMs < timelineEndMs)
+          .sort((a, b) => a.sMs - b.sMs);
+
+        // Xử lý xếp tầng (overlap) khi 1 xe có nhiều đơn gối đầu trong cùng ngày
+        const lanes = [];
+        vBookings.forEach(b => {
+          let laneIndex = 0;
+          while (lanes[laneIndex] && lanes[laneIndex] > b.sMs) {
+            laneIndex++;
+          }
+          lanes[laneIndex] = b.eMs;
+          b.lane = laneIndex;
+        });
+
+        if (lanes.length > 1) {
+          row.style.minHeight = `${44 + lanes.length * 26}px`;
+        }
+
+        // Vẽ từng thanh lịch đặt xe
+        vBookings.forEach(b => {
+          const clampStart = Math.max(b.sMs, timelineStartMs);
+          const clampEnd = Math.min(b.eMs, timelineEndMs);
+
+          const leftPx = ((clampStart - timelineStartMs) / 86400000) * DAY_WIDTH;
+          const widthPx = Math.max(((clampEnd - clampStart) / 86400000) * DAY_WIDTH, 48);
+
+          const pill = document.createElement("div");
+          let stClass = "st-pending";
+          const stUpper = (b.trangThai || "").toUpperCase();
+          if (stUpper.includes("ĐANG") || stUpper.includes("NHẬN")) stClass = "st-active";
+          else if (stUpper.includes("TRẢ") || stUpper.includes("XONG") || stUpper.includes("HOÀN")) stClass = "st-done";
+
+          pill.className = `booking-pill ${stClass}`;
+          pill.style.left = `${leftPx}px`;
+          pill.style.width = `${widthPx}px`;
+          pill.style.top = `${12 + b.lane * 24}px`;
+
+          const labelTime = `${b.tenKH ? b.tenKH + " • " : ""}${formatShortDT(b.start)} → ${formatShortDT(b.end)}`;
+          pill.innerHTML = `
+            <span class="pill-text">${labelTime}</span>
+            ${b.sdt ? `<a href="tel:${b.sdt}" class="call-btn" onclick="event.stopPropagation()" title="Gọi ${b.sdt}">📞</a>` : ""}
+          `;
+
+          pill.onclick = () => showBookingDetail(v, b);
+          track.appendChild(pill);
+        });
+
+        row.appendChild(track);
+        grid.appendChild(row);
+      });
+    }
+
+    function formatShortDT(isoStr) {
+      const d = new Date(isoStr);
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mn = String(d.getMinutes()).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      return `${hh}:${mn} ${dd}/${mm}`;
+    }
+
+    function changeDays(delta) {
+      startDate.setDate(startDate.getDate() + delta);
+      renderCalendar();
+    }
+
+    function goToday() {
+      startDate = getMonday(new Date());
+      renderCalendar();
+    }
+
+    // Hiển thị hộp thoại thông tin đầy đủ khi chạm vào 1 thanh lịch
+    function showBookingDetail(vehicle, booking) {
+      document.getElementById("mVehicle").textContent = `${vehicle.hangXe} ${vehicle.mauXe} (${vehicle.bienSo})`;
+      document.getElementById("mBody").innerHTML = `
+        <p><strong>Khách thuê:</strong> ${booking.tenKH || booking.maKH} ${booking.sdt ? `(${booking.sdt})` : ""}</p>
+        <p><strong>Nhận xe:</strong> ${formatShortDT(booking.start)}</p>
+        <p><strong>Trả xe:</strong> ${formatShortDT(booking.end)}</p>
+        <p><strong>Trạng thái:</strong> ${booking.trangThai || "Chưa cập nhật"}</p>
+        ${booking.ghiChu ? `<p><strong>Ghi chú:</strong> ${booking.ghiChu}</p>` : ""}
+      `;
+
+      const callBtn = document.getElementById("mCallBtn");
+      if (booking.sdt) {
+        callBtn.style.display = "block";
+        callBtn.href = `tel:${booking.sdt}`;
+      } else {
+        callBtn.style.display = "none";
+      }
+
+      const appBtn = document.getElementById("mAppSheetBtn");
+      appBtn.onclick = () => openInAppSheet(booking.id);
+
+      document.getElementById("detailModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("detailModal").style.display = "none";
+    }
+
+    function openInAppSheet(maCD) {
+      if (!APPSHEET_APP_ID) {
+        alert(`Mã đơn: ${maCD}\n(Khi mở từ nút bấm trong AppSheet, tham số appId sẽ tự động được truyền vào để nhảy thẳng về đơn này)`);
+        return;
+      }
+      const deepLink = `https://www.appsheet.com/start/${encodeURIComponent(APPSHEET_APP_ID)}#control=DICH%20VU_Detail&row=${encodeURIComponent(maCD)}`;
+      window.top.location.href = deepLink;
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
